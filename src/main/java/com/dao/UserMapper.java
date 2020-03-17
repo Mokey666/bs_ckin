@@ -12,9 +12,9 @@ public interface UserMapper {
     int insert(User record);
 
     int insertSelective(User record);
-
+    @Select("select uid, uname, email, phone, sex, password, image, role from bs_user where uid=#{uid} ")
     User selectByPrimaryKey(String uid);
-
+    @Update("update bs_user set uname=#{uname}, email=#{email}, phone=#{phone}, sex=#{sex}, password=#{password}, image=#{image}, role=#{role} where uid=#{uid}")
     int updateByPrimaryKeySelective(User record);
 
     int updateByPrimaryKey(User record);
