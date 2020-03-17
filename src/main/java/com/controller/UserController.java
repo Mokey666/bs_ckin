@@ -34,7 +34,14 @@ public class UserController {
             session.setAttribute(Const.CURRENT_USER, serverResponse.getData());
         }
         //todo  根据用户的role 判断重定向到学生或者老师页面。
-        return serverResponse;
+        User user = serverResponse.getData();
+        if (user.getRole() == null){
+            return ServerResponse.creatByErrorMessage("用户信息非法");
+        }
+        if (user.getRole() == 1){ //代表学生
+            return null; //跳转到学生页面
+        }
+        return serverResponse;//跳转到老师页面
     }
 
     //退出登录
