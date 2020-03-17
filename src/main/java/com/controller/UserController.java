@@ -40,6 +40,8 @@ public class UserController {
         }
         if (user.getRole() == 1){ //代表学生
             return null; //跳转到学生页面
+
+
         }
         return serverResponse;//跳转到老师页面
     }
