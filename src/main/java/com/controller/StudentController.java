@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/student/")
 public class StudentController {
 
-    public ServerResponse<User> ClassCheckIn(String userId, String classId){
+    public ServerResponse<User> ClassSign(String userId){
         return null;
     }
 }

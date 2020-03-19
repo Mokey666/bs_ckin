@@ -1,11 +1,9 @@
 package com.dao;
 
 import com.pojo.User;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
+@Mapper
 public interface UserMapper {
     int deleteByPrimaryKey(String uid);
     @Insert("insert into bs_user (uid, uname, email, phone, sex, password, image, role) values (#{uid}, #{uname}, #{email},  #{phone}, #{sex}, #{password}, #{image}, #{role})")
