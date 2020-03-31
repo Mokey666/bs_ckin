@@ -3,19 +3,36 @@ package com.pojo;
 import java.util.Date;
 
 public class Sign {
-    private String teacherId;
+    private String studentId;
     private int classId;
-    private int classOrder;
+    private int order;
+    private Integer week;
     private String className;
     private Date createTime;
     private Integer limitTime;
 
-    public String getTeacherId() {
-        return teacherId;
+    public String getStudentId() {
+        return studentId;
     }
 
-    public void setTeacherId(String teacherId) {
-        this.teacherId = teacherId;
+    public void setStudentId(String studentId) {
+        this.studentId = studentId;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    public Integer getWeek() {
+        return week;
+    }
+
+    public void setWeek(Integer week) {
+        this.week = week;
     }
 
     public int getClassId() {
@@ -24,14 +41,6 @@ public class Sign {
 
     public void setClassId(int classId) {
         this.classId = classId;
-    }
-
-    public int getClassOrder() {
-        return classOrder;
-    }
-
-    public void setClassOrder(int classOrder) {
-        this.classOrder = classOrder;
     }
 
     public String getClassName() {

@@ -13,6 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Random;
@@ -20,6 +22,8 @@ import java.util.UUID;
 
 @Service
 public class IUserServiceImpl implements IUserService {
+
+    private static final String TOKEN = "token";
 
     @Autowired
     UserMapper userMapper;
@@ -33,7 +37,7 @@ public class IUserServiceImpl implements IUserService {
             return ServerResponse.creatByErrorMessage("用户不存在");
         }
         String MD5password = MD5Util.MD5EncodeUtf8(password);
-        User user = userMapper.selectLogin(userId,password);
+        User user = userMapper.selectLogin(userId,MD5password);
         if(user == null){
             return ServerResponse.creatByErrorMessage("密码错误");
         }
@@ -44,6 +48,10 @@ public class IUserServiceImpl implements IUserService {
     public ServerResponse<String> register(User user){
         ServerResponse serverResponse = this.checkValid(user.getUid(),Const.USERNAME);
         if (!serverResponse.isSuccess()){
+            return serverResponse;
+        }
+        serverResponse = this.checkValid(user.getPhone().toString(),Const.PHONE);
+        if(!serverResponse.isSuccess()){
             return serverResponse;
         }
         user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
@@ -65,6 +73,11 @@ public class IUserServiceImpl implements IUserService {
                     return ServerResponse.creatByErrorMessage("用户名已存在");
                 }
             }
+            if(Const.PHONE.equals(type)){
+                if (str.length() != 11){
+                    return ServerResponse.creatByErrorMessage("手机号格式错误");
+                }
+            }
         }
         return ServerResponse.creatBySuccessMessage("校验成功");
     }
@@ -77,28 +90,35 @@ public class IUserServiceImpl implements IUserService {
             return ServerResponse.creatByErrorMessage("用户不存在");
         }
         //生成验证码并放入redis中
-
-        return ServerResponse.creatBySuccess(creatVerifyCode(userId));
+        BufferedImage rsbi = creatVerifyCode(userId);
+        if (rsbi == null){
+            return ServerResponse.creatByErroe();
+        }else {
+            return ServerResponse.creatBySuccess(rsbi);
+        }
     }
 
-    //判断验证码并生成token
-    public ServerResponse<String> checkCodeAndCreatToken(String userId, String code){
+    //判断验证码并生成token放入cookie中
+    public ServerResponse<String> checkCodeAndCreatToken(HttpServletResponse response, String userId, String code){
         // 检查redis中的验证码是否正确
-        if (code != redisService.get(CodeKey.codeKey,""+userId,String.class)){
+        String oldCode = redisService.get(CodeKey.codeKey,""+userId,String.class);
+        if (!oldCode.equals(code)){
             return ServerResponse.creatByErrorMessage("验证码错误");
         }
         //生成token
         String token = UUID.randomUUID().toString();
         // 将token放入redis
         redisService.set(TokenKey.tokenKey,""+userId,token);
-
+        //将token放入cookie
+        addCookie(response,token);
         return ServerResponse.creatBySuccess(token);
     }
 
     //修改密码
     public ServerResponse<String> modifyPassword(String userId,String token,String newPassword){
         // 检查redis中的token
-        if (token != redisService.get(TokenKey.tokenKey,""+userId, String.class)){
+        String oldToken = redisService.get(TokenKey.tokenKey,""+userId, String.class);
+        if (!oldToken.equals(token)){
             return ServerResponse.creatByErrorMessage("token过期或者错误");
         }
         int resultCount = userMapper.modifyPassword(userId,MD5Util.MD5EncodeUtf8(newPassword));
@@ -129,6 +149,7 @@ public class IUserServiceImpl implements IUserService {
             return ServerResponse.creatByErrorMessage("该email已存在");
         }
         User updataUser = new User();
+        updataUser.setUname(user.getUname());
         updataUser.setUid(user.getUid());
         updataUser.setEmail(user.getEmail());
 
@@ -151,13 +172,17 @@ public class IUserServiceImpl implements IUserService {
         return ServerResponse.creatBySuccess(user);
     }
 
-
-
+    private void addCookie(HttpServletResponse response, String token){
+        Cookie cookie = new Cookie(TOKEN,token);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+    }
 
     //生成验证码
     private BufferedImage creatVerifyCode(String userId){
 
-        BufferedImage bi = new BufferedImage(100,30,4);
+        BufferedImage bi = new BufferedImage(150,30,4);
 
         Graphics graphics = bi.getGraphics();
         graphics.setColor(new Color(100, 230, 200)); // 使用RGB设置背景颜色
@@ -173,13 +198,18 @@ public class IUserServiceImpl implements IUserService {
             // 随机生成验证码颜色
             graphics.setColor(new Color(random.nextInt(150), random.nextInt(200), random.nextInt(255)));
             // 将一个字符绘制到图片上，并制定位置（设置x,y坐标）
-            graphics.drawString(codeChar[index] + "", (i * 20) + 15, 20);
+            graphics.drawString(codeChar[index] + "", (i * 20) + 10, 20);
             captcha += codeChar[index];
         }
         //redis.set(captha);
         //将验证码放到session或者redis中
-        redisService.set(CodeKey.codeKey,""+userId,captcha);
-        return bi;
+        System.out.println(captcha);
+        boolean rs = redisService.set(CodeKey.codeKey,""+userId,captcha);
+        if (rs == false){
+            return null;
+        }else {
+            return bi;
+        }
     }
 
 }

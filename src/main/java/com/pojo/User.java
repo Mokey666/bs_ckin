@@ -7,7 +7,7 @@ public class User {
 
     private String email;
 
-    private Integer phone;
+    private String phone;
 
     private String sex;
 
@@ -17,7 +17,7 @@ public class User {
 
     private Integer role;
 
-    public User(String uid, String uname, String email, Integer phone, String sex, String password, String image, Integer role) {
+    public User(String uid, String uname, String email, String phone, String sex, String password, String image, Integer role) {
         this.uid = uid;
         this.uname = uname;
         this.email = email;
@@ -56,11 +56,11 @@ public class User {
         this.email = email == null ? null : email.trim();
     }
 
-    public Integer getPhone() {
+    public String getPhone() {
         return phone;
     }
 
-    public void setPhone(Integer phone) {
+    public void setPhone(String phone) {
         this.phone = phone;
     }
 

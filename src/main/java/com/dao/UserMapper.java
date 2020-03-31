@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.*;
 @Mapper
 public interface UserMapper {
     int deleteByPrimaryKey(String uid);
-    @Insert("insert into bs_user (uid, uname, email, phone, sex, password, image, role) values (#{uid}, #{uname}, #{email},  #{phone}, #{sex}, #{password}, #{image}, #{role})")
+    @Insert("insert into bs_user (uid, uname, email, phone, sex, password, image, role) values (#{uid}, #{uname}, #{email}, #{phone}, #{sex}, #{password}, #{image}, #{role})")
     int insert(User record);
 
     int insertSelective(User record);
@@ -23,7 +23,7 @@ public interface UserMapper {
     User selectLogin(@Param("userId") String userId, @Param("password") String password);
 
     int selectByIdAndEmail(@Param("userId") String userId, @Param("email") String email);
-    @Update("update bs_user set password=#{newPassoword} where uid=#{userId}")
+    @Update("update bs_user set password=#{newPassword} where uid=#{userId}")
     int modifyPassword(@Param("userId") String userId, @Param("newPassword") String newPassword);
     @Select("select count(1) from bs_user where uid=#{userId} and password=#{password}")
     int selectByIdAndPassword(@Param("userId") String userId, @Param("password") String password);

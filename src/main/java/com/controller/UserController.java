@@ -4,6 +4,8 @@ import com.common.Const;
 import com.common.ResponseCode;
 import com.common.ServerResponse;
 import com.pojo.User;
+import com.redis.CodeKey;
+import com.redis.RedisService;
 import com.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,6 +26,8 @@ public class UserController {
 
     @Autowired
     IUserService iUserService;
+    @Autowired
+    RedisService redisService;
 
     //用户登录 url:  /user/login.do
     //通过获取用户ID(学号或者账号)和密码来进行登录
@@ -35,15 +39,13 @@ public class UserController {
             session.setAttribute(Const.CURRENT_USER, serverResponse.getData());
         }
         //todo  根据用户的role 判断重定向到学生或者老师页面。
-        User user = serverResponse.getData();
-        if (user.getRole() == null){
-            return ServerResponse.creatByErrorMessage("用户信息非法");
-        }
-        if (user.getRole() == 1){ //代表学生
-            return null; //跳转到学生页面
-
-
-        }
+//        User user = serverResponse.getData();
+//        if (user.getRole() > 1 || user.getRole() < 0 ){
+//            return ServerResponse.creatByErrorMessage("用户信息非法");
+//        }
+//        if (user.getRole() == 1){ //代表学生
+//            return null; //跳转到学生页面
+//        }
         return serverResponse;//跳转到老师页面
     }
 
@@ -110,8 +112,8 @@ public class UserController {
     //忘记密码的部分：这里通过用户Id和验证码生成一个token码，返回给后台
     @RequestMapping(value = "checkCode.do", method = RequestMethod.POST)
     @ResponseBody
-    public ServerResponse<String> checkCode(String userId, String code){
-        return iUserService.checkCodeAndCreatToken(userId,code);
+    public ServerResponse<String> checkCode(HttpServletResponse response, String userId, String code){
+        return iUserService.checkCodeAndCreatToken(response,userId,code);
     }
 
     //忘记密码找回 url：/user/modifyPassword.do
@@ -164,5 +166,12 @@ public class UserController {
             return ServerResponse.creatByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),"未登录，需要要强制登陆");
         }
         return iUserService.getInformation(user.getUid());
+    }
+
+
+    @RequestMapping(value = "redis.do", method = RequestMethod.GET)
+    @ResponseBody
+    public Boolean test(){
+        return redisService.set(CodeKey.codeKey,"hzm",1);
     }
 }

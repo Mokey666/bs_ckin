@@ -8,6 +8,7 @@ public class Const {
     public static final String CURRENT_USER = "currentuser";
     public static final String EMAIL = "eamil";
     public static final String USERNAME = "username";
+    public static final String PHONE = "phone";
 
     public interface ProductListOrderBy{
         Set<String> PRICE_ASC_DESC = Sets.newHashSet("price_asc","price_desc");
