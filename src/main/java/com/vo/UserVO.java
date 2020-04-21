@@ -1,9 +1,17 @@
 package com.vo;
 
 public class UserVO {
-    public String userId;
-    public String userName;
+    private String userId;
+    private String userName;
+    private int isSign = 0;
 
+    public int getIsSign() {
+        return isSign;
+    }
+
+    public void setIsSign(int isSign) {
+        this.isSign = isSign;
+    }
     public String getUserId() {
         return userId;
     }

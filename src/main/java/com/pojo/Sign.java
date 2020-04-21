@@ -2,53 +2,26 @@ package com.pojo;
 
 import java.util.Date;
 
-public class Sign {
-    private String studentId;
-    private int classId;
-    private int order;
-    private Integer week;
-    private String className;
+public class Sign<T> {
+    private int groupId;
     private Date createTime;
     private Integer limitTime;
+    private Location location;
 
-    public String getStudentId() {
-        return studentId;
+    public Location getLocation() {
+        return location;
     }
 
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
-    public int getOrder() {
-        return order;
+    public int getGroupId() {
+        return groupId;
     }
 
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    public Integer getWeek() {
-        return week;
-    }
-
-    public void setWeek(Integer week) {
-        this.week = week;
-    }
-
-    public int getClassId() {
-        return classId;
-    }
-
-    public void setClassId(int classId) {
-        this.classId = classId;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
     }
 
     public Date getCreateTime() {
@@ -66,4 +39,5 @@ public class Sign {
     public void setLimitTime(Integer limitTime) {
         this.limitTime = limitTime;
     }
+
 }
