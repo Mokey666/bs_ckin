@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
@@ -17,9 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 @Component
-@ServerEndpoint("/websocket/{groupId}/{userId}")
+@ServerEndpoint("/websocket/{userId}/{groupId}")
 public class IWebSocketServiceImpl {
     @Autowired
     private RedisService redisService;
@@ -39,7 +39,8 @@ public class IWebSocketServiceImpl {
 
 
     @OnOpen
-    public void onOpen(@PathParam("userId")String userId, Session session,@PathParam("groupId") int groupId)    {
+    public void onOpen(Session session,@PathParam("userId") String userId,@PathParam("groupId") int groupId)    {
+        System.out.println(userId);
         this.userId = userId;
         this.session = session;
         this.groupId = groupId;
@@ -61,6 +62,7 @@ public class IWebSocketServiceImpl {
             e.printStackTrace();
             logger.info("推送历史信息出现错误");
         }
+
     }
 
     @OnError
@@ -71,12 +73,8 @@ public class IWebSocketServiceImpl {
     /**     * 连接关闭     */
     @OnClose
     public void onClose()    {
-        if (clients.containsKey(userId)){
-            clients.remove(userId);
-            subOnlineCount();
-        }else {
-            logger.info("该用户ID不存在");
-        }
+        clients.remove(this);
+        subOnlineCount();
         logger.info("有连接关闭！ 当前在线人数" + onlineNumber);
     }
 
@@ -91,7 +89,7 @@ public class IWebSocketServiceImpl {
             JSONObject jsonObject = JSON.parseObject(message);
             //发送者
             String fromUserId = jsonObject.getString("fromUserId");
-            //messagetype 1 代表普通消息 2 代表发布签到 3 代表签到 4 代表上传文件 5 代表下载文件
+            //messagetype 1 代表普通消息 2 代表发布签到 3 代表签到
             String messagetype = jsonObject.getString("messagetype");
             //具体消息
             String mess = jsonObject.getString("message");

@@ -1,30 +1,22 @@
 package com.vo;
 
 public class UserVO {
-    private String userId;
-    private String userName;
-    private int isSign = 0;
+    private String uid;
+    private String uname;
 
-    public int getIsSign() {
-        return isSign;
-    }
-
-    public void setIsSign(int isSign) {
-        this.isSign = isSign;
-    }
     public String getUserId() {
-        return userId;
+        return uid;
     }
 
     public void setUserId(String userId) {
-        this.userId = userId;
+        this.uid = userId;
     }
 
     public String getUserName() {
-        return userName;
+        return uname;
     }
 
     public void setUserName(String userName) {
-        this.userName = userName;
+        this.uid = userName;
     }
 }

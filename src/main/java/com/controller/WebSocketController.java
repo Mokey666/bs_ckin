@@ -24,6 +24,5 @@ public class WebSocketController {
             logger.info("跳转到websocket的页面上发生异常，异常信息是："+e.getMessage());
             return "error";
         }
-
     }
 }

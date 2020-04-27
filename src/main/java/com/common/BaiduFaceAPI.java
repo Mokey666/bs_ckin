@@ -25,7 +25,7 @@ public class BaiduFaceAPI {
 //        return client;
 //    }
 
-    public AipFace getClient(){
+    public static AipFace getClient(){
         client = new AipFace(APP_ID, API_KEY, SECRET_KEY);
         // 可选：设置网络连接参数
 //        client.setConnectionTimeoutInMillis(2000);//建立连接的超时时间

@@ -10,4 +10,5 @@ public interface IStudentService {
     public ServerResponse<Group> joinClassGroup(String studentId, int groupId);
     public ServerResponse<List<Group>> getAllGroup(String studentId);
     public ServerResponse<String> joinCheckByLocation(Location location, String studentId, int groupId);
+    public ServerResponse<String> joinCheckByFace(byte[] image, String studentId, int groupId);
 }

@@ -1,7 +1,6 @@
 package com.controller;
 
 import com.common.ServerResponse;
-import org.junit.Test;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,7 +23,9 @@ public class FileController {
     private List<String> allPath = new ArrayList<>();
     private boolean flag = false;
 
-
+    //单文件上传
+    //url：/file/upload.do
+    //上传文件
     @ResponseBody
     @RequestMapping(value = "upload.do", method = RequestMethod.POST)
     public ServerResponse<String> fileUpload(@RequestParam("file") MultipartFile uploadfile){
@@ -59,6 +60,8 @@ public class FileController {
     }
 
 
+    //多文件上传
+    //url: /file/multi_file_upload.do
     //多文件上传
     @ResponseBody
     @RequestMapping(value = "multi_file_upload.do", method = RequestMethod.POST)
@@ -101,6 +104,8 @@ public class FileController {
 
 
     //文件下载
+    //url：/file/file_download.do
+    //文件下载：通过文件名(这里文件名没什么太大意义)和文件路径，来进行文件下载。
     @ResponseBody
     @RequestMapping(value = "file_download.do", method = RequestMethod.POST)
     public ServerResponse<String> fileDownload(String fileName, String filePath, HttpServletResponse response){
@@ -145,6 +150,8 @@ public class FileController {
     }
 
     //返回所有文件
+    //url：/file/get_all_filepath.do
+    //返回所有文件的路经
     @ResponseBody
     @RequestMapping(value = "get_all_filepath.do", method = RequestMethod.POST)
     public ServerResponse<List<String>> getAllFilePath(){
@@ -180,9 +187,5 @@ public class FileController {
         }
         return pathlist;
     }
-    @Test
-    public void test(){
-      File file = new File("src/main/resources/"+UPLOAD_PATH_PREFIX);
 
-    }
 }

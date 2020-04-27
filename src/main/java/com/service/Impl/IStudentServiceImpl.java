@@ -1,5 +1,6 @@
 package com.service.Impl;
 
+import com.baidu.aip.util.Base64Util;
 import com.common.Allocation;
 import com.common.ServerResponse;
 import com.dao.GroupMapper;
@@ -11,10 +12,13 @@ import com.redis.CodeKey;
 import com.redis.RedisService;
 import com.service.IStudentService;
 import com.util.DistanceUtil;
+import com.util.FaceUtil;
 import com.vo.UserVO;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import org.apache.catalina.Server;
 import org.aspectj.apache.bcel.classfile.Code;
+import org.json.JSONObject;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,36 +53,78 @@ public class IStudentServiceImpl implements IStudentService {
         return ServerResponse.creatBySuccess(groups);
     }
 
-    //位置签到
+    //定位签到
     public ServerResponse<String> joinCheckByLocation(Location location, String studentId, int groupId) {
-        Sign sign = redisService.get(CodeKey.signKey, "" + groupId, Sign.class);
+        Sign sign = redisService.get(CodeKey.signKey, ""+groupId, Sign.class);
+
+        if(sign == null){
+            return ServerResponse.creatByErrorMessage("未发布签到");
+        }
+
+        Timestamp creatTime = new Timestamp(System.currentTimeMillis());
+        Map<UserVO, Integer> map = new HashMap<>();
+        //获取签到表
+        map = redisService.get(CodeKey.singsKey,""+groupId,Map.class);
+        UserVO userVO = null;
+        //查看表中是否有该同学
+        for (UserVO x : map.keySet()){
+            if (x.getUserId().equals(studentId)){
+                userVO = x;
+            }
+        }
+        if(userVO == null){
+            return ServerResponse.creatByErrorMessage("该同学不在签到名单中");
+        }
+        if ((Long) creatTime.getTime() - (Long) sign.getCreateTime().getTime() > sign.getLimitTime() * 60 * 1000) {
+            return ServerResponse.creatByErrorMessage("签到已经截止");
+        }
+        if (!isPointOnLine(location, sign.getLocation())) {
+            return ServerResponse.creatByErrorMessage("不在签到范围内");
+        }
+        //将该同学置为已签到 1
+        map.put(userVO,1);
+        redisService.set(CodeKey.singsKey,""+groupId,map);
+        return ServerResponse.creatBySuccessMessage("签到成功");
+    }
+
+
+    //todo 人脸识别签到
+    public ServerResponse<String> joinCheckByFace(byte[] image, String studentId, int groupId){
+        Sign sign = redisService.get(CodeKey.signKey, ""+groupId, Sign.class);
         if(sign == null){
             return ServerResponse.creatByErrorMessage("未发布签到");
         }
         Timestamp creatTime = new Timestamp(System.currentTimeMillis());
-        Map<String, Integer> map = new HashMap<>();
+        Map<UserVO, Integer> map = new HashMap<>();
+        //获取签到表
+        map = redisService.get(CodeKey.singsKey,""+groupId,Map.class);
+        UserVO userVO = null;
+        //查看表中是否有该同学
+        for (UserVO x : map.keySet()){
+            if (x.getUserId().equals(studentId)){
+                userVO = x;
+            }
+        }
+        if(userVO == null){
+            return ServerResponse.creatByErrorMessage("该同学不在签到名单中");
+        }
         if ((Long) creatTime.getTime() - (Long) sign.getCreateTime().getTime() > sign.getLimitTime() * 60 * 1000) {
-            map.put(studentId, 0);
             return ServerResponse.creatByErrorMessage("签到已经截止");
         }
-        if (!isPointOnLine(location, sign.getLocation())) {
-            map.put(studentId, 0);
-            return ServerResponse.creatByErrorMessage("不在签到范围内");
-        }
-        map.put(studentId,1);
-        if (redisService.exists(CodeKey.signKey, "" + groupId + sign.getCreateTime())) {
-            map = redisService.get(CodeKey.signKey, "" + groupId + sign.getCreateTime(), Map.class);
-            map.put(studentId, 1);
-            redisService.set(CodeKey.signKey, "" + groupId + sign.getCreateTime(), map);
-        } else {
-            redisService.set(CodeKey.signKey, "" + groupId + sign.getCreateTime(), map);
-        }
-        return ServerResponse.creatBySuccessMessage("签到成功");
-    }
 
-    //todo 人脸识别签到
-    public ServerResponse<String> joinCheckByFace(){
-        return null;
+        //人脸搜索
+        String rsImage = Base64Util.encode(image);
+        JSONObject jsonObject = FaceUtil.faceSearch(rsImage, studentId);
+        String error_code = jsonObject.get("error_code").toString();
+        double score = jsonObject.getJSONObject("result").getJSONArray("user_list").getJSONObject(0).getDouble("score");
+        if (error_code.equals("222207") && score < 80.0){
+            return ServerResponse.creatByErrorMessage("未匹配到该用户人脸信息");
+        }
+
+        map.put(userVO,1);
+        redisService.set(CodeKey.singsKey,""+groupId,map);
+
+        return ServerResponse.creatBySuccessMessage("签到成功");
     }
 
     //判断是否在范围内
@@ -92,5 +138,6 @@ public class IStudentServiceImpl implements IStudentService {
             return true;
         }
     }
+
 }
 

@@ -1,6 +1,5 @@
 package com.service.Impl;
 
-import com.common.Const;
 import com.common.ServerResponse;
 import com.dao.ClassMapper;
 import com.dao.GroupMapper;
@@ -13,14 +12,15 @@ import com.redis.CodeKey;
 import com.redis.RedisService;
 import com.service.ITeacherService;
 import com.util.ClassGroupIdUtil;
-import com.vo.UserSign;
-import org.omg.PortableInterceptor.INACTIVE;
+import com.vo.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpSession;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ITeacherServiceImpl implements ITeacherService {
@@ -37,30 +37,41 @@ public class ITeacherServiceImpl implements ITeacherService {
     StudentGroupMapper studentGroupMapper;
 
 
-    //生成签到
+    //发布签到
     public ServerResponse<Sign> publishSign(Sign sign){
         int rs = groupMapper.selectByGroupId(sign.getGroupId());
+
         if (rs == 0){
             return ServerResponse.creatByErrorMessage("该讨论组不存在");
         }
+
         Timestamp creatTime = new Timestamp(System.currentTimeMillis());
         sign.setCreateTime(creatTime);
+        //将签到信息放入redis中
         redisService.set(CodeKey.signKey, ""+sign.getGroupId(),sign);
+
+        //创建一个签到记录表
+        Map<UserVO, Integer> map = new HashMap<>();
+        for (UserVO x : listCheckUser(sign.getGroupId())){
+            map.put(x,0);
+        }
+        //将签到表放入redis
+        redisService.set(CodeKey.singsKey,""+sign.getGroupId(),map);
         return ServerResponse.creatBySuccess(sign);
     }
 
 
     //获取应该获得签到的学生名单
-    private List<String> listCheckUser(int groupId){
-        List<String> usersId = studentGroupMapper.selectUserVoByGroupId(groupId);
+    private List<UserVO> listCheckUser(int groupId){
+        List<UserVO> usersId = studentGroupMapper.selectUserIdByGroupId(groupId);
         return usersId;
     }
 
-
     //查看签到的记录
-    public ServerResponse<List<UserSign>> getCheckUsers(int groupId){
-        List<UserSign> userSign = redisService.get(CodeKey.signKey,""+groupId,List.class);
-        return ServerResponse.creatBySuccess(userSign);
+    public ServerResponse<Map<UserVO,Integer>> getCheckUsers(int groupId){
+        Map<UserVO, Integer> map = new HashMap<>();
+        map = redisService.get(CodeKey.singsKey,""+groupId,Map.class);
+        return ServerResponse.creatBySuccess(map);
     }
 
     //创建课堂讨论组
