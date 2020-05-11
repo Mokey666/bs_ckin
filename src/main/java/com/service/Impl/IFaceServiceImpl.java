@@ -45,7 +45,6 @@ public class IFaceServiceImpl implements IFaceService {
                     }
                 }
             }
-
         }
         // 人脸注册
         JSONObject res = FaceUtil.faceRegister(rsimage,userId,usernmae);

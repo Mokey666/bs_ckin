@@ -3,6 +3,7 @@ package com.util;
 import com.baidu.aip.face.AipFace;
 import com.baidu.aip.util.Base64Util;
 import com.common.BaiduFaceAPI;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 
@@ -138,7 +139,7 @@ public class FaceUtil {
     public void test() {
         BaiduFaceAPI baiduFaceAPI = new BaiduFaceAPI();
         AipFace aipFace = baiduFaceAPI.getClient();
-        File file = new File("C:\\Users\\侯泽明\\Desktop\\1.jpg");
+        File file = new File("C:\\Users\\侯泽明\\Desktop\\3.jpg");
         FileInputStream is = null;
         String str = null;
         try{
@@ -159,10 +160,19 @@ public class FaceUtil {
             }
         }
         //faceRegister(str,"03161330","hzm");
+        Object o = null;
+        if (o == null){
+            System.out.println("2");
+        }
         JSONObject jsonObject = FaceUtil.faceSearch(str);
-        double score = jsonObject.getJSONObject("result").getJSONArray("user_list").getJSONObject(0).getDouble("score");
-        System.out.println(jsonObject.toString(2));
-        System.out.println(score);
+        System.out.println(jsonObject.get("result"));
+        if (jsonObject.get("result").equals(o)) {
+            System.out.println("1");
+        }
+//        String score = jsonObject.getJSONObject("result").getJSONArray("user_list").getJSONObject(0).getString("03161330");
+//        System.out.println(jsonObject.toString(2));
+//        System.out.println(score);
+
 //        JSONObject rs = FaceUtil.faceSearch(str);
 //        System.out.println(rs.getString("result"));
 //        if (rs.get("result").equals("null")) {

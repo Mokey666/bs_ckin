@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
@@ -37,19 +38,31 @@ public class UserController {
     public ServerResponse<User> login(String userId, String password, HttpSession session){
 
         ServerResponse<User> serverResponse = iUserService.login(userId,password);
+
         if (serverResponse.isSuccess()) {
             session.setAttribute(Const.CURRENT_USER, serverResponse.getData());
         }
-        //todo  根据用户的role 判断重定向到学生或者老师页面。
-//        User user = serverResponse.getData();
-//        if (user.getRole() > 1 || user.getRole() < 0 ){
-//            return ServerResponse.creatByErrorMessage("用户信息非法");
-//        }
-//        if (user.getRole() == 1){ //代表学生
-//            return null; //跳转到学生页面
-//        }
-        return serverResponse;//跳转到老师页面
+        return serverResponse;
     }
+
+    //人脸识别登录
+    @RequestMapping(value = "loginByFace.do", method = RequestMethod.POST)
+    @ResponseBody
+    public ServerResponse<User> loginByFace(MultipartFile image, HttpSession session){
+        byte[] rsImage = null;
+        try {
+            rsImage = image.getBytes();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        ServerResponse<User> serverResponse = iUserService.loginByFace(rsImage);
+        if (serverResponse.isSuccess()) {
+            session.setAttribute(Const.CURRENT_USER, serverResponse.getData());
+        }
+        return serverResponse;
+    }
+
+
 
     //退出登录 url：/user/logout.do
     //不需要获取什么
@@ -95,6 +108,9 @@ public class UserController {
     @RequestMapping(value = "creatCheckCode.do", method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse<String> creatCheckCode(HttpServletResponse response, String userId){
+        if (userId == null){
+            return ServerResponse.creatByErrorMessage("账号不能为空");
+        }
         ServerResponse<BufferedImage> bi = iUserService.creatCheckCode(userId);
         if (bi != null) {
             try {

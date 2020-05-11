@@ -1,6 +1,8 @@
 package com.controller;
 
+import com.common.Const;
 import com.common.ServerResponse;
+import com.pojo.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -9,10 +11,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -28,21 +29,26 @@ public class FileController {
     //上传文件
     @ResponseBody
     @RequestMapping(value = "upload.do", method = RequestMethod.POST)
-    public ServerResponse<String> fileUpload(@RequestParam("file") MultipartFile uploadfile){
+    public ServerResponse<String> fileUpload(HttpSession session, Integer groupId, @RequestParam("file") MultipartFile uploadfile){
+        User user = (User)session.getAttribute(Const.CURRENT_USER);
+        if (user == null){
+            return ServerResponse.creatByErrorMessage("用户未登录");
+        }
+
         if (uploadfile == null){
             return ServerResponse.creatByErrorMessage("上传文件为null");
         }
         //获取文件名
         String fileName = uploadfile.getOriginalFilename();
-        if (isExist(new File("src/main/resources/"+UPLOAD_PATH_PREFIX),fileName)){
+        if (isExist(new File("src/main/resources/"+UPLOAD_PATH_PREFIX + groupId+"/"),fileName)){
             return ServerResponse.creatByErrorMessage("文件名重复");
         }
         //文件保存路经
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/");
-        String format = sdf.format(new Date());
-        String realPath = new String("src/main/resources/"+UPLOAD_PATH_PREFIX);
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/");
+//        String format = sdf.format(new Date());
+        String realPath = new String("src/main/resources/"+UPLOAD_PATH_PREFIX + groupId +"/");
 
-        File file = new File(realPath+format);
+        File file = new File(realPath);
         if (!file.exists()){
             file.mkdirs();
         }
@@ -65,7 +71,12 @@ public class FileController {
     //多文件上传
     @ResponseBody
     @RequestMapping(value = "multi_file_upload.do", method = RequestMethod.POST)
-    public ServerResponse<List<String>> multifileUpload(List<MultipartFile> uploadfiles){
+    public ServerResponse<List<String>> multifileUpload(Integer groupId, HttpSession session, List<MultipartFile> uploadfiles){
+        User user = (User)session.getAttribute(Const.CURRENT_USER);
+        if (user == null){
+            return ServerResponse.creatByErrorMessage("用户未登录");
+        }
+
         if (uploadfiles == null && uploadfiles.size() == 0){
             return ServerResponse.creatByErrorMessage("上传文件为null");
         }
@@ -75,17 +86,17 @@ public class FileController {
             if (uploadfile == null){
                 return ServerResponse.creatByErrorMessage("上传文件为null");
             }
-            //获取文件名d
+            //获取文件名
             String fileName = uploadfile.getOriginalFilename();
-            if (isExist(new File("src/main/resources/"+UPLOAD_PATH_PREFIX),fileName)){
+            if (isExist(new File("src/main/resources/"+UPLOAD_PATH_PREFIX + groupId + "/"),fileName)){
                 return ServerResponse.creatByErrorMessage("文件名重复");
             }
             //获取文件保存路径
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/");
-            String format = sdf.format(new Date());
-            String realPath = new String("src/main/resources/"+UPLOAD_PATH_PREFIX);
+//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/");
+//            String format = sdf.format(new Date());
+            String realPath = new String("src/main/resources/"+UPLOAD_PATH_PREFIX+groupId+"/");
 
-            File file = new File(realPath+format);
+            File file = new File(realPath);
             if (!file.exists()){
                 file.mkdirs();
             }
@@ -108,8 +119,13 @@ public class FileController {
     //文件下载：通过文件名(这里文件名没什么太大意义)和文件路径，来进行文件下载。
     @ResponseBody
     @RequestMapping(value = "file_download.do", method = RequestMethod.POST)
-    public ServerResponse<String> fileDownload(String fileName, String filePath, HttpServletResponse response){
-        File file = new File(filePath,fileName);
+    public ServerResponse<String> fileDownload(HttpSession session,String fileName, String filePath, HttpServletResponse response){
+        User user = (User)session.getAttribute(Const.CURRENT_USER);
+        if (user == null){
+            return ServerResponse.creatByErrorMessage("用户未登录");
+        }
+
+        File file = new File(filePath);
         if (!file.exists()){
             return ServerResponse.creatByErrorMessage("文件不存在");
         }else {
@@ -145,7 +161,7 @@ public class FileController {
                     }
                 }
             }
-            return ServerResponse.creatBySuccess(fileName);
+            return ServerResponse.creatByErrorMessage("下载成功");
         }
     }
 
@@ -154,14 +170,25 @@ public class FileController {
     //返回所有文件的路经
     @ResponseBody
     @RequestMapping(value = "get_all_filepath.do", method = RequestMethod.POST)
-    public ServerResponse<List<String>> getAllFilePath(){
-        File file = new File("src/main/resources/"+UPLOAD_PATH_PREFIX);
+    public ServerResponse<List<String>> getAllFilePath(Integer groupId,HttpSession session){
+        User user = (User)session.getAttribute(Const.CURRENT_USER);
+        if (user == null){
+            return ServerResponse.creatByErrorMessage("用户未登录");
+        }
+
+        File file = new File("src/main/resources/"+UPLOAD_PATH_PREFIX + groupId+"/");
+        if (!file.exists()){
+            return ServerResponse.creatBySuccess(null);
+        }
         return ServerResponse.creatBySuccess(getAllFilePath(file,allPath));
     }
 
     //判断文件名是否重复
     private boolean isExist(File file,String targetfilename){
         File[] files = file.listFiles();
+        if (files == null){
+            return flag;
+        }
         for (File newfile : files){
             if (newfile.isDirectory()){
                 isExist(newfile,targetfilename);

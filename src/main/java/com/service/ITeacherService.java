@@ -12,6 +12,6 @@ import java.util.Map;
 public interface ITeacherService {
     public ServerResponse<Integer> creatGroup(String teacherId, String className,String message);
     public ServerResponse<Sign> publishSign(Sign sign);
-    public ServerResponse<Map<UserVO,Integer>> getCheckUsers(int groupId);
+    public ServerResponse<Map<String,Integer>>  getCheckUsers(int groupId);
     public ServerResponse<List<Group>> getAllgroupId(String teacherId);
 }

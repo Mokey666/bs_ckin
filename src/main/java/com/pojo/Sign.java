@@ -2,11 +2,11 @@ package com.pojo;
 
 import java.util.Date;
 
-public class Sign<T> {
-    private int groupId;
-    private Date createTime;
-    private Integer limitTime;
-    private Location location;
+public class Sign {
+    private int groupId; //讨论组号
+    private Date createTime;//创建时间
+    private Integer limitTime;//允许时长
+    private Location location;//位置信息（经纬度）
 
     public Location getLocation() {
         return location;
@@ -40,4 +40,13 @@ public class Sign<T> {
         this.limitTime = limitTime;
     }
 
+    @Override
+    public String toString() {
+        return "Sign{" +
+                "groupId=" + groupId +
+                ", createTime=" + createTime +
+                ", limitTime=" + limitTime +
+                ", location=" + location +
+                '}';
+    }
 }

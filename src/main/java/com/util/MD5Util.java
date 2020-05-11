@@ -8,7 +8,6 @@ import java.security.MessageDigest;
  * Created by geely
  */
 public class MD5Util {
-
     private static String byteArrayToHexString(byte b[]) {
         StringBuffer resultSb = new StringBuffer();
         for (int i = 0; i < b.length; i++)
@@ -45,12 +44,10 @@ public class MD5Util {
         }
         return resultString.toUpperCase();
     }
-
     public static String MD5EncodeUtf8(String origin) {
         origin = origin + PropertiesUtil.getProperty("password.salt", "");
         return MD5Encode(origin, "utf-8");
     }
-
 
     private static final String hexDigits[] = {"0", "1", "2", "3", "4", "5",
             "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};

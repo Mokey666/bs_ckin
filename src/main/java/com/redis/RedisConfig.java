@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix="spring.redis")
 public class RedisConfig {
-    private String host;
+    private String host;//
     private int port;
     private int timeout;//秒
     private String password;

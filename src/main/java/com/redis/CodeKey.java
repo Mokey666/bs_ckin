@@ -8,7 +8,7 @@ public class CodeKey extends BasePrefix{
 
     public CodeKey(int expireSeconds, String prefix) {
         super(expireSeconds, prefix);
-    }
+    }//expireSeconds有效时长，prefix前缀
 
     public static CodeKey codeKey = new CodeKey(30,"code");
     public static CodeKey signKey = new CodeKey(30,"sign");

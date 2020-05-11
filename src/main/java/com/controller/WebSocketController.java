@@ -18,7 +18,6 @@ public class WebSocketController {
         try{
             logger.info("跳转到websocket的页面上");
             model.addAttribute("username",name);
-            System.out.println(name);
             return "webSocket";
         } catch (Exception e){
             logger.info("跳转到websocket的页面上发生异常，异常信息是："+e.getMessage());

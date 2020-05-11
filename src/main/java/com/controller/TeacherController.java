@@ -85,7 +85,7 @@ public class TeacherController {
     //通过组号来查看
     @ResponseBody
     @RequestMapping(value = "get_check_user.do", method = RequestMethod.POST)
-    public ServerResponse<Map<UserVO,Integer>> getCheckUsers(HttpSession session, int groupId){
+    public ServerResponse<Map<String,Integer>> getCheckUsers(HttpSession session, int groupId){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");

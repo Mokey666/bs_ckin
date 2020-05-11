@@ -16,4 +16,5 @@ public interface IUserService {
     public ServerResponse<String> restPassword(User user, String oldPassword, String newPassword);
     public ServerResponse<User> updateUserInfo(User user);
     public ServerResponse<User> getInformation(String userId);
+    public ServerResponse<User> loginByFace(byte[] image);
 }

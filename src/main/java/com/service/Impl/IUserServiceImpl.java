@@ -1,15 +1,20 @@
 package com.service.Impl;
 
+import com.baidu.aip.util.Base64Util;
 import com.common.Const;
 import com.common.ServerResponse;
 import com.dao.UserMapper;
+import com.pojo.Sign;
 import com.pojo.User;
 import com.redis.CodeKey;
 import com.redis.RedisService;
 import com.redis.TokenKey;
 import com.service.IUserService;
+import com.util.FaceUtil;
 import com.util.MD5Util;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +49,7 @@ public class IUserServiceImpl implements IUserService {
         user.setPassword("****");
         return ServerResponse.creatBySuccess("登陆成功",user);
     }
+
     //注册
     public ServerResponse<String> register(User user){
         ServerResponse serverResponse = this.checkValid(user.getUid(),Const.USERNAME);
@@ -102,7 +108,8 @@ public class IUserServiceImpl implements IUserService {
     public ServerResponse<String> checkCodeAndCreatToken(HttpServletResponse response, String userId, String code){
         // 检查redis中的验证码是否正确
         String oldCode = redisService.get(CodeKey.codeKey,""+userId,String.class);
-        if (!oldCode.equals(code)){
+
+        if (oldCode == null || (!oldCode.equals(code))){
             return ServerResponse.creatByErrorMessage("验证码错误");
         }
         //生成token
@@ -118,7 +125,8 @@ public class IUserServiceImpl implements IUserService {
     public ServerResponse<String> modifyPassword(String userId,String token,String newPassword){
         // 检查redis中的token
         String oldToken = redisService.get(TokenKey.tokenKey,""+userId, String.class);
-        if (!oldToken.equals(token)){
+
+        if (oldToken == null || (!oldToken.equals(token))){
             return ServerResponse.creatByErrorMessage("token过期或者错误");
         }
         int resultCount = userMapper.modifyPassword(userId,MD5Util.MD5EncodeUtf8(newPassword));
@@ -153,7 +161,6 @@ public class IUserServiceImpl implements IUserService {
         updataUser.setUid(user.getUid());
         updataUser.setEmail(user.getEmail());
 
-
         int updataCount = userMapper.updateByPrimaryKeySelective(updataUser);
         if (updataCount > 0){
             return ServerResponse.creatBySuccess("更新个人信息成功",updataUser);
@@ -167,6 +174,24 @@ public class IUserServiceImpl implements IUserService {
         User user = userMapper.selectByPrimaryKey(userId);
         if (user == null){
             return ServerResponse.creatByErrorMessage("找不到当前用户");
+        }
+        user.setPassword(StringUtils.EMPTY);
+        return ServerResponse.creatBySuccess(user);
+    }
+
+    //人脸识别登录
+    public ServerResponse<User> loginByFace(byte[] image){
+        String rsimage = Base64Util.encode(image);
+        JSONObject jsonObject = FaceUtil.faceSearch(rsimage);
+        Object rs = jsonObject.get("result");
+        if (rs.equals(null)){
+            return ServerResponse.creatByErrorMessage("找不到该用户的人脸信息");
+        }
+        String userid = jsonObject.getJSONObject("result").getJSONArray("user_list").getJSONObject(0).getString("user_id");
+
+        User user = userMapper.selectByPrimaryKey(userid);
+        if (user == null){
+            return ServerResponse.creatByErrorMessage("用户不存在");
         }
         user.setPassword(StringUtils.EMPTY);
         return ServerResponse.creatBySuccess(user);
