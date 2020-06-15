@@ -1,11 +1,13 @@
 package com.controller;
 
+import com.baidu.aip.util.Base64Util;
 import com.common.Const;
 import com.common.ServerResponse;
 import com.pojo.Group;
 import com.pojo.Location;
 import com.pojo.User;
 import com.service.IStudentService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +31,10 @@ public class StudentController {
     //通过组号来加入讨论组并返回讨论组的信息
     @ResponseBody
     @RequestMapping(value = "join_class_group.do",method = RequestMethod.POST)
-    public ServerResponse<Group> joinClassGroup(HttpSession session, int groupId){
+    public ServerResponse<Group> joinClassGroup(HttpSession session, Integer groupId){
+        if (groupId == null){
+            return ServerResponse.creatByErrorMessage("请输入讨论组组号");
+        }
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");
@@ -62,7 +67,7 @@ public class StudentController {
     //通过传入学生位置信息和组号，来进行定位签到。
     @ResponseBody
     @RequestMapping(value = "join_check_location.do",method = RequestMethod.POST)
-    public ServerResponse<String> joinCheckByLocation(Location location, HttpSession session, int groupId){
+    public ServerResponse<String> joinCheckByLocation(Double longitude, Double latitude, HttpSession session, Integer groupId){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");
@@ -70,7 +75,7 @@ public class StudentController {
         if (user.getRole() != 1){
             return ServerResponse.creatByErrorMessage("用户没有权限");
         }
-        return iStudentService.joinCheckByLocation(location,user.getUid(),groupId);
+        return iStudentService.joinCheckByLocation(longitude,latitude,user.getUid(),groupId);
     }
 
     //人脸识别签到
@@ -78,7 +83,7 @@ public class StudentController {
     //通过前端传过来的人脸照片信息（文件的形式）和组号 来进行定位签到
     @ResponseBody
     @RequestMapping(value = "join_check_face.do", method = RequestMethod.POST)
-    public ServerResponse<String> joinCheckByFace(MultipartFile image, HttpSession session, int groupId){
+    public ServerResponse<String> joinCheckByFace(MultipartFile image, HttpSession session, Integer groupId){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");
@@ -86,13 +91,17 @@ public class StudentController {
         if (user.getRole() != 1){
             return ServerResponse.creatByErrorMessage("用户没有权限");
         }
+        if (image == null){
+            return ServerResponse.creatByErrorMessage("请上传照片");
+        }
 
-        byte[] rsImage = null;
+        byte[] bt = null;
         try {
-            rsImage = image.getBytes();
-        }catch (IOException e){
+            bt = image.getBytes();
+        } catch (IOException e) {
             e.printStackTrace();
         }
+        String rsImage = Base64Util.encode(bt);
 
         return iStudentService.joinCheckByFace(rsImage,user.getUid(),groupId);
     }

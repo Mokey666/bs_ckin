@@ -1,5 +1,7 @@
 package com.util;
 
+import org.junit.Test;
+
 public class DistanceUtil {
     //地球半径
     private static double EARTH_RADIUS = 6378137.0; // 单位米
@@ -18,4 +20,5 @@ public class DistanceUtil {
     private static double rad(double d){
         return d * Math.PI / 180.0;
     }//弧度转换
+
 }

@@ -21,7 +21,9 @@ import java.util.List;
 public class FileController {
 
     private static final String UPLOAD_PATH_PREFIX = "static/file/";
-    private List<String> allPath = new ArrayList<>();
+
+
+
     private boolean flag = false;
 
     //单文件上传
@@ -44,8 +46,6 @@ public class FileController {
             return ServerResponse.creatByErrorMessage("文件名重复");
         }
         //文件保存路经
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/");
-//        String format = sdf.format(new Date());
         String realPath = new String("src/main/resources/"+UPLOAD_PATH_PREFIX + groupId +"/");
 
         File file = new File(realPath);
@@ -71,7 +71,7 @@ public class FileController {
     //多文件上传
     @ResponseBody
     @RequestMapping(value = "multi_file_upload.do", method = RequestMethod.POST)
-    public ServerResponse<List<String>> multifileUpload(Integer groupId, HttpSession session, List<MultipartFile> uploadfiles){
+    public ServerResponse<List<String>> multifileUpload(Integer groupId, HttpSession session,  @RequestParam("uploadfiles")List<MultipartFile> uploadfiles){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");
@@ -91,9 +91,7 @@ public class FileController {
             if (isExist(new File("src/main/resources/"+UPLOAD_PATH_PREFIX + groupId + "/"),fileName)){
                 return ServerResponse.creatByErrorMessage("文件名重复");
             }
-            //获取文件保存路径
-//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/");
-//            String format = sdf.format(new Date());
+
             String realPath = new String("src/main/resources/"+UPLOAD_PATH_PREFIX+groupId+"/");
 
             File file = new File(realPath);
@@ -117,9 +115,11 @@ public class FileController {
     //文件下载
     //url：/file/file_download.do
     //文件下载：通过文件名(这里文件名没什么太大意义)和文件路径，来进行文件下载。
-    @ResponseBody
+    /**
+    * 做了改动
+     * **/
     @RequestMapping(value = "file_download.do", method = RequestMethod.POST)
-    public ServerResponse<String> fileDownload(HttpSession session,String fileName, String filePath, HttpServletResponse response){
+    public ServerResponse<String> fileDownload(HttpSession session,String fileName, String filePath, HttpServletResponse response) {
         User user = (User)session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");
@@ -170,7 +170,7 @@ public class FileController {
     //返回所有文件的路经
     @ResponseBody
     @RequestMapping(value = "get_all_filepath.do", method = RequestMethod.POST)
-    public ServerResponse<List<String>> getAllFilePath(Integer groupId,HttpSession session){
+    public ServerResponse<List<String>> getAllFilePath(Integer groupId, HttpSession session){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");
@@ -180,6 +180,7 @@ public class FileController {
         if (!file.exists()){
             return ServerResponse.creatBySuccess(null);
         }
+        List<String> allPath = new ArrayList<>();
         return ServerResponse.creatBySuccess(getAllFilePath(file,allPath));
     }
 
@@ -203,7 +204,7 @@ public class FileController {
     }
 
     //获得所有文件地址
-    private List<String> getAllFilePath(File file,List<String> pathlist){
+    private List<String> getAllFilePath(File file, List<String> pathlist){
         File[] files = file.listFiles();
         for (File newfile : files){
             if (newfile.isFile()){

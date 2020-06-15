@@ -51,12 +51,11 @@
     function send_msg() {
         if (webSocket != null) {
             var input_msg = document.getElementById("input_msg").value.trim();
+            var userId = document.getElementById("userId").value;
             if (input_msg == "") {
                 return;
             }
             webSocket.send(input_msg);
-            // 清除input框里的信息
-            document.getElementById("input_msg").value = "";
         } else {
             alert("您已掉线，请重新进入聊天室...");
         }
@@ -79,7 +78,6 @@
             return;
         }
         if ("WebSocket" in window) {
-            alert("您的浏览器支持 WebSocket!");
             var url = "ws://127.0.0.1:8888/websocket/" + userId+ "/"+roomName;
             // 打开一个 web socket
             if (webSocket != null) {
@@ -88,26 +86,18 @@
             }
             webSocket = new WebSocket(url);
 
-            alert(url);
-
             webSocket.onopen = function () {
-                alert("已进入聊天室，畅聊吧...");
             };
 
             webSocket.onmessage = function (evt) {
-                alert(evt.data);
-                // var msg_board = document.getElementsByClassName("msg_board")[0];
-                // var received_msg = evt.data;
-                // var old_msg = msg_board.innerHTML;
-                // msg_board.innerHTML = old_msg + received_msg + "<br>";
-                // // 让滚动块往下移动
-                // msg_board.scrollTop = msg_board.scrollTop + 40;
+                alert(evt.data)
             };
 
             webSocket.onclose = function () {
                 // 关闭 websocket，清空信息板
                 alert("连接已关闭...");
             };
+
         } else {
             // 浏览器不支持 WebSocket
             alert("您的浏览器不支持 WebSocket!");

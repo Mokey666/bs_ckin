@@ -10,10 +10,12 @@ public class CodeKey extends BasePrefix{
         super(expireSeconds, prefix);
     }//expireSeconds有效时长，prefix前缀
 
+
     public static CodeKey codeKey = new CodeKey(30,"code");
     public static CodeKey signKey = new CodeKey(30,"sign");
-    public static CodeKey singsKey = new CodeKey(30,"signUsers");
-    //public static CodeKey webSocketKey = new CodeKey(30,"webSocket");
-    public static CodeKey historicRecordKey = new CodeKey(30,"historicRecord");
+    public static CodeKey singsKey = new CodeKey(0,"signUsers");
+    //public static CodeKey historicRecordKey = new CodeKey(0,"historicRecord");
     public static CodeKey faceKey = new CodeKey(0,"face");
+
+
 }

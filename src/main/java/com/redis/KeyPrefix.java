@@ -6,4 +6,5 @@ public interface KeyPrefix {
 
     public String getPrefix();
 
+    public void setExpireSeconds(int seconds);
 }

@@ -38,7 +38,6 @@ public class TeacherController {
     @RequestMapping(value = "creat_group.do", method = RequestMethod.POST)
     public ServerResponse<Integer> creatGroup(HttpSession session,String className,String message){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
-        System.out.println(className);
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");
         }
@@ -71,6 +70,9 @@ public class TeacherController {
     @RequestMapping(value = "publish_sign.do", method = RequestMethod.POST)
     public ServerResponse<Sign> publishSign(Sign sign, HttpSession session){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if(sign.getLatitude() == null){
+            return ServerResponse.creatBySuccessMessage("不是double");
+        }
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");
         }

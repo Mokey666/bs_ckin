@@ -1,10 +1,11 @@
 package com.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.baidu.aip.util.Base64Util;
 import com.common.Const;
 import com.common.ServerResponse;
 import com.pojo.User;
 import com.service.IFaceService;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,17 +32,17 @@ public class FaceController {
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");
         }
-        if (user.getRole() != 1){
-            return ServerResponse.creatByErrorMessage("用户无权限");
+        if(image == null){
+            return ServerResponse.creatBySuccessMessage("未上传照片");
         }
 
-        byte[] rsImage = null;
+        byte[] bt = null;
         try {
-            rsImage = image.getBytes();
-        }catch (IOException e){
+            bt = image.getBytes();
+        } catch (IOException e) {
             e.printStackTrace();
         }
-
+        String rsImage = Base64Util.encode(bt);
         return iFaceService.faceRegister(rsImage,user.getUid(),user.getUname());
     }
 
@@ -55,16 +56,17 @@ public class FaceController {
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");
         }
-        if (user.getRole() != 1){
-            return ServerResponse.creatByErrorMessage("用户无权限");
+        if(image == null){
+            return ServerResponse.creatByErrorMessage("未上传照片");
         }
 
-        byte[] rsImage = null;
+        byte[] bt = null;
         try {
-            rsImage = image.getBytes();
-        }catch (IOException e){
+            bt = image.getBytes();
+        } catch (IOException e) {
             e.printStackTrace();
         }
+        String rsImage = Base64Util.encode(bt);
 
         return iFaceService.faceUpdate(user.getUname(),rsImage,user.getUid());
     }
@@ -75,15 +77,23 @@ public class FaceController {
     //通过id进行人脸信息删除
     @ResponseBody
     @RequestMapping(value = "face_delete.do", method = RequestMethod.POST)
-    public ServerResponse<String> faecDelete(HttpSession session){
+    public ServerResponse<String> faceDelete(HttpSession session){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.creatByErrorMessage("用户未登录");
         }
-        if (user.getRole() != 1){
-            return ServerResponse.creatByErrorMessage("用户无权限");
-        }
 
         return iFaceService.faceDelete(user.getUid());
     }
+
+
+    @ResponseBody
+    @RequestMapping(value = "test.do", method = RequestMethod.POST)
+    public ServerResponse<String> test(MultipartFile file){
+        if(file == null){
+            return ServerResponse.creatByErrorMessage("失败");
+        }
+        return ServerResponse.creatBySuccessMessage("成功");
+    }
+
 }

@@ -2,7 +2,6 @@ package com.redis;
 
 public class TokenKey extends BasePrefix{
 
-
     public TokenKey(String prefix) {
         super(prefix);
     }

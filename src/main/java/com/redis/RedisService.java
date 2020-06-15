@@ -56,29 +56,6 @@ public class RedisService {
         }
     }
 
-//    public <T> boolean setNXEX(final KeyPrefix prefix, final String key, final T req) {
-//        if(req == null){
-//            return false;
-//        }
-//        int expireSeconds = prefix.expireSeconds();
-//        if(expireSeconds <= 0) {
-//            throw new RuntimeException("[SET EX NX]必须设置超时时间");
-//        }
-//        String realKey = prefix.getPrefix() + key;
-//        String value = beanToString(req);
-//        Jedis jc = null;
-//        try {
-//            jc = jedisPool.getResource();
-//            String ret =  jc.set(realKey, value, "nx", "ex", expireSeconds);
-//            return "OK".equals(ret);
-//        } catch (final Exception e) {
-//            e.printStackTrace();
-//            return false;
-//        } finally {
-//            returnToPool(jc);
-//        }
-//    }
-
     /**
      * 判断key是否存在
      * */

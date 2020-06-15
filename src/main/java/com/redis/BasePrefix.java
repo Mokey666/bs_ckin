@@ -24,4 +24,9 @@ public abstract class BasePrefix implements KeyPrefix{
         return className+":" + prefix;
     }
 
+    @Override
+    public void setExpireSeconds(int seconds) {
+        this.expireSeconds=seconds;
+    }
+
 }

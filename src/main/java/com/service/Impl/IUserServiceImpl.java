@@ -4,7 +4,6 @@ import com.baidu.aip.util.Base64Util;
 import com.common.Const;
 import com.common.ServerResponse;
 import com.dao.UserMapper;
-import com.pojo.Sign;
 import com.pojo.User;
 import com.redis.CodeKey;
 import com.redis.RedisService;
@@ -13,12 +12,10 @@ import com.service.IUserService;
 import com.util.FaceUtil;
 import com.util.MD5Util;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
-import org.junit.Test;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -116,19 +113,17 @@ public class IUserServiceImpl implements IUserService {
         String token = UUID.randomUUID().toString();
         // 将token放入redis
         redisService.set(TokenKey.tokenKey,""+userId,token);
-        //将token放入cookie
-        addCookie(response,token);
         return ServerResponse.creatBySuccess(token);
     }
 
     //修改密码
-    public ServerResponse<String> modifyPassword(String userId,String token,String newPassword){
-        // 检查redis中的token
-        String oldToken = redisService.get(TokenKey.tokenKey,""+userId, String.class);
-
-        if (oldToken == null || (!oldToken.equals(token))){
-            return ServerResponse.creatByErrorMessage("token过期或者错误");
-        }
+    public ServerResponse<String> modifyPassword(String userId,String newPassword){
+//        // 检查redis中的token
+//        String oldToken = redisService.get(TokenKey.tokenKey,""+userId, String.class);
+//
+//        if (oldToken == null || (!oldToken.equals(token))){
+//            return ServerResponse.creatByErrorMessage("token过期或者错误");
+//        }
         int resultCount = userMapper.modifyPassword(userId,MD5Util.MD5EncodeUtf8(newPassword));
         if (resultCount == 0){
             return ServerResponse.creatByErrorMessage("修改失败");
@@ -180,11 +175,13 @@ public class IUserServiceImpl implements IUserService {
     }
 
     //人脸识别登录
-    public ServerResponse<User> loginByFace(byte[] image){
-        String rsimage = Base64Util.encode(image);
-        JSONObject jsonObject = FaceUtil.faceSearch(rsimage);
+    public ServerResponse<User> loginByFace(String image64){
+        //String rsimage = Base64Util.encode(image);
+        JSONObject jsonObject = FaceUtil.faceSearch(image64);
+
         Object rs = jsonObject.get("result");
-        if (rs.equals(null)){
+
+        if (rs == null){
             return ServerResponse.creatByErrorMessage("找不到该用户的人脸信息");
         }
         String userid = jsonObject.getJSONObject("result").getJSONArray("user_list").getJSONObject(0).getString("user_id");
@@ -197,12 +194,6 @@ public class IUserServiceImpl implements IUserService {
         return ServerResponse.creatBySuccess(user);
     }
 
-    private void addCookie(HttpServletResponse response, String token){
-        Cookie cookie = new Cookie(TOKEN,token);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
-    }
 
     //生成验证码
     private BufferedImage creatVerifyCode(String userId){

@@ -1,5 +1,6 @@
 package com.controller;
 
+import com.baidu.aip.util.Base64Util;
 import com.common.Const;
 import com.common.ResponseCode;
 import com.common.ServerResponse;
@@ -7,6 +8,7 @@ import com.pojo.User;
 import com.redis.CodeKey;
 import com.redis.RedisService;
 import com.service.IUserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -36,9 +38,7 @@ public class UserController {
     @RequestMapping(value = "login.do", method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse<User> login(String userId, String password, HttpSession session){
-
         ServerResponse<User> serverResponse = iUserService.login(userId,password);
-
         if (serverResponse.isSuccess()) {
             session.setAttribute(Const.CURRENT_USER, serverResponse.getData());
         }
@@ -49,12 +49,16 @@ public class UserController {
     @RequestMapping(value = "loginByFace.do", method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse<User> loginByFace(MultipartFile image, HttpSession session){
-        byte[] rsImage = null;
+        if (image == null){
+            return ServerResponse.creatByErrorMessage("上传照片失败");
+        }
+        byte[] bt = null;
         try {
-            rsImage = image.getBytes();
-        }catch (IOException e){
+            bt = image.getBytes();
+        } catch (IOException e) {
             e.printStackTrace();
         }
+        String rsImage = Base64Util.encode(bt);
         ServerResponse<User> serverResponse = iUserService.loginByFace(rsImage);
         if (serverResponse.isSuccess()) {
             session.setAttribute(Const.CURRENT_USER, serverResponse.getData());
@@ -105,19 +109,21 @@ public class UserController {
 
     //获取验证码 url：/user/creatCheckCode.do
     //在用户忘记密码的时候，通过用户的账号（学号或者工号）来生成一个验证码，展示到前端页面。
-    @RequestMapping(value = "creatCheckCode.do", method = RequestMethod.POST)
+    @RequestMapping(value = "creatCheckCode.do", method = RequestMethod.GET)
     @ResponseBody
     public ServerResponse<String> creatCheckCode(HttpServletResponse response, String userId){
-        if (userId == null){
+        if (StringUtils.isEmpty(userId)){
             return ServerResponse.creatByErrorMessage("账号不能为空");
         }
         ServerResponse<BufferedImage> bi = iUserService.creatCheckCode(userId);
         if (bi != null) {
             try {
+                response.setContentType("image/jpeg");
                 OutputStream out = response.getOutputStream();
-                ImageIO.write(bi.getData(), "JPG", out);
+                ImageIO.write(bi.getData(), "JPEG", out);
                 out.flush();
                 out.close();
+                return null;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -138,8 +144,8 @@ public class UserController {
     //传入信息（验证码输入正确后产生的token、用户ID，和新的密码）给后台来进行密码的修改
     @RequestMapping(value = "modifyPassword.do", method = RequestMethod.POST)
     @ResponseBody
-    public ServerResponse<String> modifyPassword(String userId, String newPassword, String token){
-        return iUserService.modifyPassword(userId,token,newPassword);
+    public ServerResponse<String> modifyPassword(String userId, String newPassword){
+        return iUserService.modifyPassword(userId,newPassword);
     }
 
     //登录状态找回密码 url：/user/restPassword.do
@@ -167,11 +173,7 @@ public class UserController {
         user.setUname(currentUser.getUname());
         user.setRole(currentUser.getRole());
 
-        ServerResponse<User> serverResponse = iUserService.updateUserInfo(user);
-        if (serverResponse.isSuccess()){
-            session.setAttribute(Const.CURRENT_USER,user);
-        }
-        return serverResponse;
+        return iUserService.updateUserInfo(user);
     }
 
     //获取用户具体信息 url：/user/get_user_Info.do

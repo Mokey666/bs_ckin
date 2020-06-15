@@ -11,7 +11,6 @@ import com.redis.CodeKey;
 import com.redis.RedisService;
 import com.service.ITeacherService;
 import com.util.ClassGroupIdUtil;
-import com.vo.UserVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,15 +45,16 @@ public class ITeacherServiceImpl implements ITeacherService {
         Timestamp creatTime = new Timestamp(System.currentTimeMillis());
         sign.setCreateTime(creatTime);
         //将签到信息放入redis中
-      //   signKey = new CodeKey(sign.getLimitTime()*60,"sign");
+        //设置签到信息以及签到记录表时长
+        CodeKey.signKey.setExpireSeconds(sign.getLimitTime()*60);
         redisService.set(CodeKey.signKey, ""+sign.getGroupId(),sign);
         //创建一个签到记录表
         Map<String, Integer> map = new HashMap<>();
         for (String x : listCheckUser(sign.getGroupId())){
             map.put(x,0);
         }
-
         //将签到表放入redis
+        CodeKey.singsKey.setExpireSeconds((sign.getLimitTime()*60)*3);
         redisService.set(CodeKey.singsKey,""+sign.getGroupId(),map);
         return ServerResponse.creatBySuccess(sign);
     }
@@ -70,6 +70,9 @@ public class ITeacherServiceImpl implements ITeacherService {
     public ServerResponse<Map<String,Integer>> getCheckUsers(int groupId){
         Map<String, Integer> map = new HashMap<>();
         map = redisService.get(CodeKey.singsKey,""+groupId,Map.class);
+        if (map == null){
+            return ServerResponse.creatByErrorMessage("未发布签到");
+        }
         return ServerResponse.creatBySuccess(map);
     }
 

@@ -6,14 +6,23 @@ public class Sign {
     private int groupId; //讨论组号
     private Date createTime;//创建时间
     private Integer limitTime;//允许时长
-    private Location location;//位置信息（经纬度）
+    private Double longitude; //经度
+    private Double latitude;    //纬度
 
-    public Location getLocation() {
-        return location;
+    public Double getLongitude() {
+        return longitude;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
     }
 
     public int getGroupId() {
@@ -40,13 +49,4 @@ public class Sign {
         this.limitTime = limitTime;
     }
 
-    @Override
-    public String toString() {
-        return "Sign{" +
-                "groupId=" + groupId +
-                ", createTime=" + createTime +
-                ", limitTime=" + limitTime +
-                ", location=" + location +
-                '}';
-    }
 }
